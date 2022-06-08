@@ -1,38 +1,30 @@
 import csv
-import os 
+import os
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from mixed_gaussian_EM_algorithm import MixedGaussianModel
 
-
-def checkData():
-    male_height_sample = []
-    female_height_sample = []
-    male_weight_sample = []
-    female_weight_sample = []
-    dataset_file = open('Test set.csv')
-    csvreader = csv.reader(dataset_file)
-    for row in csvreader:
-        try:
-            if row[-1] == 'Male':
-                male_height_sample.append(float(row[0]) / 100)
-                male_weight_sample.append(float(row[1]))
-            else:
-                female_height_sample.append(float(row[0]) / 100)
-                female_weight_sample.append(float(row[1]))
-        except ValueError as v:
-            print(v)
-
-    male_count = len(male_height_sample)
-    female_count = len(female_height_sample)
-    print(str(male_count) + '*' + str(female_count))
-    plt.scatter(np.array(male_height_sample), np.array(male_weight_sample))
-    plt.scatter(np.array(female_height_sample), np.array(female_weight_sample))
-    plt.show()
-        
 
 def main():
-    checkData()
+    dataset_file = open('Test set.csv')
+    csvReader = csv.reader(dataset_file)
+    sample_data = []
+    for row in csvReader:
+        try:
+            sample_data.append([float(row[0]) / 100, float(row[1]) / 100])
+        except ValueError as v:
+            print(v)
+    sample_data = np.array(sample_data)
+    model = MixedGaussianModel(2)
+    model.import_test_data(sample_data)
+    u_list = [[1.4, 0.65], [1.70, 0.8]]
+    model.init_mean(np.array(u_list))
+    s_list = [[0.1, 0.01, 0.1], [0.1, 0.01, 0.1]]
+    model.init_sigma(s_list)
+    p_list = [0.5, 0.5]
+    model.init_pi(np.array(p_list))
+    model.iteration_calculate()
 
 
 if __name__ == '__main__':
