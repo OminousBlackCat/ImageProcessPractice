@@ -1,8 +1,5 @@
 import csv
-import os
-import re
 import numpy as np
-import matplotlib.pyplot as plt
 from mixed_gaussian_EM_algorithm import MixedGaussianModel
 
 
@@ -18,11 +15,11 @@ def main():
     sample_data = np.array(sample_data)
     model = MixedGaussianModel(2)
     model.import_test_data(sample_data)
-    u_list = [[1.4, 0.65], [1.70, 0.8]]
+    u_list = [[1.5, 0.5], [1.75, 0.8]]
     model.init_mean(np.array(u_list))
-    s_list = [[0.1, 0.01, 0.1], [0.1, 0.01, 0.1]]
+    s_list = [[0.1, 0.001, 0.1], [0.1, 0.05, 0.1]]
     model.init_sigma(s_list)
-    p_list = [0.5, 0.5]
+    p_list = [0.6, 0.4]
     model.init_pi(np.array(p_list))
     model.iteration_calculate()
 

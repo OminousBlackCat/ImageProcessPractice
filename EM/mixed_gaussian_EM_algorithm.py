@@ -17,7 +17,7 @@ def gaussian_function(u_x, u_y, s_x, c, s_y, x, y):
         [c, s_y]
     ])
     sigma_matrix = np.matrix(sigma_matrix)
-    coe = 1 / (2 * math.pi * math.sqrt(s_x * s_y - c * c))
+    coe = 1 / (2 * math.pi * math.sqrt(np.linalg.det(sigma_matrix)))
     vector = np.array([x - u_x, y - u_y])
     pow_coe = -0.5 * (np.dot(np.dot(vector, sigma_matrix.I), vector.T))
     return coe * math.exp(pow_coe)
@@ -112,15 +112,15 @@ class MixedGaussianModel:
                 a = a * influence_facter[:, k]
                 sum_temp = np.sum(a)
                 self.sigma_list[k][0] = np.sum(influence_facter[:, k] *
-                                               ((self.sample_list[:, 0] - upper_u_list[k][0]) * (
-                                                       self.sample_list[:, 0] - upper_u_list[k][0]))) / \
+                                               ((self.sample_list[:, 0] - self.u_list[k][0]) * (
+                                                       self.sample_list[:, 0] - self.u_list[k][0]))) / \
                                         sum_of_Q_table[k]
                 self.sigma_list[k][1] = np.sum(influence_facter[:, k] * (
-                        (self.sample_list[:, 0] - upper_u_list[k][0]) * (
-                        self.sample_list[:, 1] - upper_u_list[k][1]))) / sum_of_Q_table[k]
+                        (self.sample_list[:, 0] - self.u_list[k][0]) * (
+                        self.sample_list[:, 1] - self.u_list[k][1]))) / sum_of_Q_table[k]
                 self.sigma_list[k][2] = np.sum(influence_facter[:, k] * (
-                        (self.sample_list[:, 1] - upper_u_list[k][1]) * (
-                        self.sample_list[:, 1] - upper_u_list[k][1]))) / sum_of_Q_table[k]
+                        (self.sample_list[:, 1] - self.u_list[k][1]) * (
+                        self.sample_list[:, 1] - self.u_list[k][1]))) / sum_of_Q_table[k]
             # Update pi parameter
             for k in range(self.cluster_count):
                 self.pi_list[k] = sum_of_Q_table[k] / self.sample_list.shape[0]
@@ -128,8 +128,8 @@ class MixedGaussianModel:
             print('U List:' + str(self.u_list))
             print('Sigma List' + str(self.sigma_list))
             print('Pi List' + str(self.pi_list))
-            if (upper_u_list[0][0] - self.u_list[0][0]) ** 2 < 0.001 and (
-                    upper_u_list[1][1] - self.u_list[1][1]) ** 2 < 0.001:
+            if (upper_u_list[0][0] - self.u_list[0][0]) ** 2 < 0.0001 and (
+                    upper_u_list[1][1] - self.u_list[1][1]) ** 2 < 0.0001:
                 break
             else:
                 iteration_count += 1
