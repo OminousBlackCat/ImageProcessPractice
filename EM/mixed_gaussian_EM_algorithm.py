@@ -54,7 +54,7 @@ class MixedGaussianModel:
     def plot_raw_data(self):
         plt.scatter(self.sample_list[:, 0], self.sample_list[:, 1])
 
-    def draw_gaussian_with_current_parm(self, cluster_index):
+    def draw_gaussian_with_current_parm(self, cluster_index, iterature_index=0):
         x = np.arange(1.2, 2.0, 0.01)
         y = np.arange(0.3, 1.3, 0.01)
         xx, yy = np.meshgrid(x, y)
@@ -65,7 +65,8 @@ class MixedGaussianModel:
         c = ax.pcolormesh(x, y, z1, cmap='RdBu', vmin=np.min(z1), vmax=np.max(z1))
         fig.colorbar(c, ax=ax)
         self.plot_raw_data()
-        plt.show()
+        plt.savefig('save2/' + str(iterature_index).zfill(2) + '_' + str(cluster_index) + '.png')
+        plt.close(fig)
 
     def iteration_calculate(self):
         print('Using EM algorithm fits mixed gaussian model')
@@ -76,8 +77,9 @@ class MixedGaussianModel:
         print('Pi List' + str(self.pi_list))
 
         iteration_count = 0
-        self.draw_gaussian_with_current_parm(0)
-        self.draw_gaussian_with_current_parm(1)
+        e_list = []
+        self.draw_gaussian_with_current_parm(0, 0)
+        self.draw_gaussian_with_current_parm(1, 0)
         while iteration_count < 100000:
             # Using initial parameter to start iterating
             # E step: according to current model parameter, calculate the influence facter of each cluster
@@ -128,10 +130,16 @@ class MixedGaussianModel:
             print('U List:' + str(self.u_list))
             print('Sigma List' + str(self.sigma_list))
             print('Pi List' + str(self.pi_list))
-            if (upper_u_list[0][0] - self.u_list[0][0]) ** 2 < 0.0001 and (
-                    upper_u_list[1][1] - self.u_list[1][1]) ** 2 < 0.0001:
+            e_list.append(np.sum(np.absolute(upper_u_list - self.u_list)))
+            if np.sum(np.absolute(upper_u_list - self.u_list)) < 0.001 or iteration_count > 50:
                 break
             else:
+                print(np.sum(np.absolute(upper_u_list - self.u_list)))
                 iteration_count += 1
-            self.draw_gaussian_with_current_parm(cluster_index=0)
-            self.draw_gaussian_with_current_parm(cluster_index=1)
+            self.draw_gaussian_with_current_parm(cluster_index=0, iterature_index=iteration_count)
+            self.draw_gaussian_with_current_parm(cluster_index=1, iterature_index=iteration_count)
+        e_array = np.array(e_list)
+        index_list = np.array(range(1, len(e_list) + 1))
+        plt.clf()
+        plt.plot(index_list, e_array)
+        plt.savefig('save2/' + 'sum.png')
