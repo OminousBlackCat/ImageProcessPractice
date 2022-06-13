@@ -68,6 +68,51 @@ class MixedGaussianModel:
         plt.savefig('save2/' + str(iterature_index).zfill(2) + '_' + str(cluster_index) + '.png')
         plt.close(fig)
 
+    def classification(self):
+        male_class = []
+        female_class = []
+        mistake_class = []
+        for sample in self.sample_list:
+            if gaussian_function(self.u_list[0][0], self.u_list[0][1], self.sigma_list[0][0],
+                                 self.sigma_list[0][1], self.sigma_list[0][2], sample[0], sample[1]) >= \
+                gaussian_function(self.u_list[1][0], self.u_list[1][1], self.sigma_list[1][0],
+                                  self.sigma_list[1][1], self.sigma_list[1][2], sample[0], sample[1]):
+                female_class.append(sample)
+                if sample[2] == 1:
+                    mistake_class.append(sample)
+            else:
+                male_class.append(sample)
+                if sample[2] == 0:
+                    mistake_class.append(sample)
+        female_class = np.array(female_class)
+        male_class = np.array(male_class)
+        mistake_class = np.array(mistake_class)
+        plt.scatter(female_class[:, 0], female_class[:, 1], c='green')
+        plt.scatter(male_class[:, 0], male_class[:, 1], c='blue')
+        plt.scatter(mistake_class[:, 0], mistake_class[:, 1], marker='+', c='red')
+        # plt.show()
+
+    def demarcation(self):
+        x = np.arange(1.2, 2.0, 0.01)
+        y = np.arange(0.3, 1.3, 0.01)
+        xx, yy = np.meshgrid(x, y)
+        z0 = gaussian_function_with_input(self.u_list[0][0], self.u_list[0][1],
+                                          self.sigma_list[0][0],
+                                          self.sigma_list[0][1], self.sigma_list[0][2], xx, yy)
+        z1 = gaussian_function_with_input(self.u_list[1][0], self.u_list[1][1],
+                                          self.sigma_list[1][0],
+                                          self.sigma_list[1][1], self.sigma_list[1][2], xx, yy)
+        z2 = np.zeros(z0.shape)
+        for i in range(z0.shape[0]):
+            for j in range(z0.shape[1]):
+                if z0[i][j] >= z1[i][j]:
+                    z2[i][j] = 1
+        fig, ax = plt.subplots()
+        c = ax.pcolormesh(x, y, z2, cmap='Greys', vmin=np.min(z2), vmax=np.max(z2))
+        fig.colorbar(c, ax=ax)
+        self.classification()
+        fig.show()
+
     def iteration_calculate(self):
         print('Using EM algorithm fits mixed gaussian model')
         print('Current cluster count:' + str(self.cluster_count))
@@ -131,7 +176,7 @@ class MixedGaussianModel:
             print('Sigma List' + str(self.sigma_list))
             print('Pi List' + str(self.pi_list))
             e_list.append(np.sum(np.absolute(upper_u_list - self.u_list)))
-            if np.sum(np.absolute(upper_u_list - self.u_list)) < 0.001 or iteration_count > 50:
+            if np.sum(np.absolute(upper_u_list - self.u_list)) < 0.001 or iteration_count > 30:
                 break
             else:
                 print(np.sum(np.absolute(upper_u_list - self.u_list)))
@@ -143,3 +188,4 @@ class MixedGaussianModel:
         plt.clf()
         plt.plot(index_list, e_array)
         plt.savefig('save2/' + 'sum.png')
+
